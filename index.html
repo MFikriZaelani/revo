@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat Clicker</title>
+
+  <!-- Custom Tailwind configuration — must come BEFORE the CDN script -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          keyframes: {
+            wiggle: {
+              '0%, 100%': { transform: 'translateX(-10px)' },
+              '50%':       { transform: 'translateX(10px)' },
+            },
+            'zzz-fade': {
+              '0%':   { opacity: '0' },
+              '50%':  { opacity: '1' },
+              '100%': { opacity: '0' },
+            },
+          },
+          animation: {
+            wiggle: 'wiggle 0.1s infinite',
+            zzz:    'zzz-fade 2s forwards',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts — Quicksand with sans-serif fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body { font-family: 'Quicksand', sans-serif; }
+
+    /* Frosted-glass helper for counter pills */
+    .frosted {
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    /* zzz-fade keyframe fallback for browsers that ignore Tailwind CDN config */
+    @keyframes zzz-fade {
+      0%   { opacity: 0; }
+      50%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-[#FFD1DC] to-[#B5FFFC] flex flex-col items-center justify-center gap-6">
+
+  <!-- Counter bar -->
+  <div class="flex gap-4">
+    <div id="pet-counter"  class="frosted rounded-full px-5 py-2 text-sm font-semibold text-gray-700">Total Pets: 0 🐾</div>
+    <div id="aura-counter" class="frosted rounded-full px-5 py-2 text-sm font-semibold text-gray-700">Aura: 0 ✨</div>
+  </div>
+
+  <!-- Cat container -->
+  <div class="relative flex items-center justify-center aspect-square w-48">
+
+    <!-- Zzz overlay -->
+    <div id="zzz" class="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl hidden">💤</div>
+
+    <!-- Speed lines (Zoomies) -->
+    <div id="speed-lines" class="absolute inset-0 flex items-center justify-center gap-2 pointer-events-none hidden">
+      <span class="text-xl animate-ping">💨</span>
+      <span class="text-xl animate-ping" style="animation-delay:0.15s">💨</span>
+      <span class="text-xl animate-ping" style="animation-delay:0.3s">💨</span>
+    </div>
+
+    <!-- SVG Cat (Task 2) — inline illustration, 160×180 px, neutral resting state -->
+    <svg id="cat"
+         tabindex="0"
+         role="button"
+         aria-label="Pet the cat"
+         xmlns="http://www.w3.org/2000/svg"
+         viewBox="0 0 160 180"
+         width="160" height="180"
+         class="cursor-pointer select-none focus:outline-none focus:ring-4 focus:ring-pink-300 rounded-full">
+
+      <!-- Drop-shadow filter definition -->
+      <defs>
+        <filter id="cat-shadow" x="-20%" y="-10%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.18)"/>
+        </filter>
+      </defs>
+
+      <!-- Platform ellipse — sits beneath the cat body -->
+      <ellipse cx="80" cy="170" rx="48" ry="8" fill="rgba(0,0,0,0.10)"/>
+
+      <!-- Tail — curves out from behind the right side of the body -->
+      <path d="M105 130 Q138 118 132 96 Q127 80 115 85"
+            stroke="#f0b080" stroke-width="10" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Main cat group (receives drop-shadow filter) -->
+      <g filter="url(#cat-shadow)">
+
+        <!-- Body -->
+        <ellipse cx="80" cy="130" rx="42" ry="38" fill="#f5c27a"/>
+
+        <!-- Head -->
+        <circle cx="80" cy="72" r="36" fill="#f5c27a"/>
+
+        <!-- Left ear (outer) -->
+        <polygon points="44,52  34,20  62,46" fill="#f5c27a"/>
+        <!-- Left ear (inner pink) -->
+        <polygon points="47,49  38,24  60,45" fill="#f9b4c8"/>
+
+        <!-- Right ear (outer) -->
+        <polygon points="116,52  126,20  98,46" fill="#f5c27a"/>
+        <!-- Right ear (inner pink) -->
+        <polygon points="113,49  122,24  100,45" fill="#f9b4c8"/>
+
+        <!-- Left eye — large, round, dark -->
+        <ellipse cx="66" cy="70" rx="7" ry="8" fill="#2a2a2a"/>
+        <!-- Left eye highlight -->
+        <circle cx="69" cy="66" r="2.5" fill="white"/>
+        <circle cx="64" cy="73" r="1" fill="white" opacity="0.6"/>
+
+        <!-- Right eye -->
+        <ellipse cx="94" cy="70" rx="7" ry="8" fill="#2a2a2a"/>
+        <!-- Right eye highlight -->
+        <circle cx="97" cy="66" r="2.5" fill="white"/>
+        <circle cx="92" cy="73" r="1" fill="white" opacity="0.6"/>
+
+        <!-- Blush marks -->
+        <ellipse cx="52" cy="82" rx="7" ry="4" fill="#f9a0b4" opacity="0.45"/>
+        <ellipse cx="108" cy="82" rx="7" ry="4" fill="#f9a0b4" opacity="0.45"/>
+
+        <!-- Nose -->
+        <path d="M76 86 L80 90 L84 86 Z" fill="#e8768a"/>
+
+        <!-- Mouth — gentle W smile -->
+        <path d="M74 91 Q77 95 80 92 Q83 95 86 91"
+              stroke="#c0607a" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Whiskers left -->
+        <line x1="22" y1="82" x2="68" y2="87" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="22" y1="89" x2="68" y2="90" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="24" y1="96" x2="68" y2="93" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+
+        <!-- Whiskers right -->
+        <line x1="92" y1="87" x2="138" y2="82" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="92" y1="90" x2="138" y2="89" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="92" y1="93" x2="136" y2="96" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+
+        <!-- Front paws peeking below body -->
+        <ellipse cx="62" cy="162" rx="13" ry="9" fill="#f0b080"/>
+        <ellipse cx="98" cy="162" rx="13" ry="9" fill="#f0b080"/>
+        <!-- Paw toe lines -->
+        <line x1="56" y1="166" x2="56" y2="170" stroke="#d08040" stroke-width="1" stroke-linecap="round"/>
+        <line x1="62" y1="168" x2="62" y2="172" stroke="#d08040" stroke-width="1" stroke-linecap="round"/>
+        <line x1="68" y1="166" x2="68" y2="170" stroke="#d08040" stroke-width="1" stroke-linecap="round"/>
+        <line x1="92" y1="166" x2="92" y2="170" stroke="#d08040" stroke-width="1" stroke-linecap="round"/>
+        <line x1="98" y1="168" x2="98" y2="172" stroke="#d08040" stroke-width="1" stroke-linecap="round"/>
+        <line x1="104" y1="166" x2="104" y2="170" stroke="#d08040" stroke-width="1" stroke-linecap="round"/>
+
+      </g>
+    </svg>
+
+    <!-- Happy reaction overlay text -->
+    <div id="overlay-text" class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full text-sm font-bold text-pink-600 whitespace-nowrap hidden">
+      YAY! 😊 (+5 Aura)
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // AudioManager
+    // Expected audio files co-located with index.html:
+    //   pet.mp3   — short pop / meow played on every pet
+    //   purr.mp3  — looping purr clip (~2 s)
+    //   zoom.mp3  — zoom / boing sound effect
+    // ---------------------------------------------------------------------------
+    const AudioManager = (() => {
+      const sounds = {
+        pet:  new Audio('pet.mp3'),
+        purr: new Audio('purr.mp3'),
+        zoom: new Audio('zoom.mp3'),
+      };
+
+      function play(name, loop = false) {
+        const audio = sounds[name];
+        if (!audio) return;
+        audio.loop = loop;
+        audio.play().catch(() => {});
+      }
+
+      function stop(name) {
+        const audio = sounds[name];
+        if (!audio) return;
+        audio.pause();
+        audio.currentTime = 0;
+      }
+
+      return { play, stop };
+    })();
+
+    // ---------------------------------------------------------------------------
+    // ReactionSelector
+    // Maps a 1–100 integer to one of four reaction types.
+    // Defaults to 'happy' for any exception, out-of-range value, NaN, null,
+    // or non-numeric return from rng.
+    // ---------------------------------------------------------------------------
+    const ReactionSelector = (() => {
+      /**
+       * @param {() => number} [rng] - Optional RNG function; defaults to a
+       *   uniform integer in [1, 100] via Math.random().
+       * @returns {'happy'|'purring'|'sleeping'|'zoomies'}
+       */
+      function select(rng = () => Math.floor(Math.random() * 100) + 1) {
+        let n;
+        try {
+          n = rng();
+        } catch (_) {
+          return 'happy';
+        }
+
+        // Reject non-numeric, NaN, null, or out-of-range values
+        if (typeof n !== 'number' || !isFinite(n) || n < 1 || n > 100) {
+          return 'happy';
+        }
+
+        if (n <= 40)  return 'happy';
+        if (n <= 70)  return 'purring';
+        if (n <= 90)  return 'sleeping';
+        return 'zoomies';
+      }
+
+      return { select };
+    })();
+
+    // ---------------------------------------------------------------------------
+    // AnimationController
+    // Manages the lifecycle of a single active reaction animation.
+    // Only one reaction runs at a time; starting a new one cancels the previous
+    // timer and synchronously removes its classes before applying the new ones.
+    // ---------------------------------------------------------------------------
+    const AnimationController = (() => {
+      // DOM element references (resolved once after DOMContentLoaded)
+      let catEl, overlayEl, zzzEl, speedLinesEl;
+
+      // Per-reaction configuration
+      const REACTION_CONFIG = {
+        happy: {
+          catClasses:     ['animate-bounce'],
+          overlayText:    'YAY! 😊 (+5 Aura)',
+          showOverlay:    true,
+          showZzz:        false,
+          showSpeedLines: false,
+          duration:       1000,
+          auraGain:       5,
+          sound:          null,
+          soundLoop:      false,
+        },
+        purring: {
+          catClasses:     ['animate-pulse'],
+          overlayText:    '',
+          showOverlay:    false,
+          showZzz:        false,
+          showSpeedLines: false,
+          duration:       2000,
+          auraGain:       0,
+          sound:          'purr',
+          soundLoop:      true,
+        },
+        sleeping: {
+          catClasses:     ['scale-90', 'rotate-6'],
+          overlayText:    '',
+          showOverlay:    false,
+          showZzz:        true,
+          showSpeedLines: false,
+          duration:       2000,
+          auraGain:       0,
+          sound:          null,
+          soundLoop:      false,
+        },
+        zoomies: {
+          catClasses:     ['animate-wiggle'],
+          overlayText:    '',
+          showOverlay:    false,
+          showZzz:        false,
+          showSpeedLines: true,
+          duration:       1500,
+          auraGain:       0,
+          sound:          'zoom',
+          soundLoop:      false,
+        },
+      };
+
+      let activeTimer = null;
+      let cleanupFn   = null;
+
+      /** Stop the active timer and run any pending cleanup immediately. */
+      function cancel() {
+        clearTimeout(activeTimer);
+        activeTimer = null;
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+      }
+
+      /**
+       * Start a reaction animation, cancelling any currently running one first.
+       * @param {string}   reactionType - One of 'happy'|'purring'|'sleeping'|'zoomies'.
+       * @param {function} onAuraGain   - Called with the aura delta (5 for happy, 0 otherwise).
+       */
+      function trigger(reactionType, onAuraGain) {
+        // Lazily resolve DOM elements on first use
+        if (!catEl) {
+          catEl        = document.getElementById('cat');
+          overlayEl    = document.getElementById('overlay-text');
+          zzzEl        = document.getElementById('zzz');
+          speedLinesEl = document.getElementById('speed-lines');
+        }
+
+        const config = REACTION_CONFIG[reactionType] || REACTION_CONFIG.happy;
+
+        // Cancel any in-progress reaction
+        cancel();
+
+        // Apply cat animation classes
+        config.catClasses.forEach(cls => catEl.classList.add(cls));
+
+        // Manage overlay text
+        if (config.showOverlay) {
+          overlayEl.textContent = config.overlayText;
+          overlayEl.classList.remove('hidden');
+        } else {
+          overlayEl.classList.add('hidden');
+        }
+
+        // Manage Zzz element
+        if (config.showZzz) {
+          zzzEl.classList.remove('hidden');
+          // Re-trigger CSS animation by removing and re-adding the animate class
+          zzzEl.classList.remove('animate-zzz');
+          void zzzEl.offsetWidth; // force reflow
+          zzzEl.classList.add('animate-zzz');
+        } else {
+          zzzEl.classList.add('hidden');
+          zzzEl.classList.remove('animate-zzz');
+        }
+
+        // Manage speed-lines element
+        if (config.showSpeedLines) {
+          speedLinesEl.classList.remove('hidden');
+        } else {
+          speedLinesEl.classList.add('hidden');
+        }
+
+        // Play reaction sound (if any)
+        if (config.sound) {
+          AudioManager.play(config.sound, config.soundLoop);
+        }
+
+        // Award aura immediately (happy only via onAuraGain)
+        if (typeof onAuraGain === 'function') {
+          onAuraGain(config.auraGain);
+        }
+
+        // Build the cleanup closure for this reaction
+        const thisConfig = config;
+        cleanupFn = () => {
+          // Remove all cat classes added for this reaction
+          thisConfig.catClasses.forEach(cls => catEl.classList.remove(cls));
+          // Hide overlays
+          overlayEl.classList.add('hidden');
+          zzzEl.classList.add('hidden');
+          zzzEl.classList.remove('animate-zzz');
+          speedLinesEl.classList.add('hidden');
+          // Stop looping sounds
+          if (thisConfig.sound && thisConfig.soundLoop) {
+            AudioManager.stop(thisConfig.sound);
+          }
+        };
+
+        // Schedule cleanup after reaction duration
+        activeTimer = setTimeout(() => {
+          if (cleanupFn) {
+            cleanupFn();
+            cleanupFn = null;
+          }
+          activeTimer = null;
+        }, thisConfig.duration);
+      }
+
+      return { trigger, cancel };
+    })();
+
+    // ---------------------------------------------------------------------------
+    // App bootstrap
+    // ---------------------------------------------------------------------------
+
+    let petCount  = 0;
+    let auraScore = 0;
+
+    /** @param {number} n @returns {string} */
+    function formatPetCounter(n) {
+      return 'Total Pets: ' + n + ' 🐾';
+    }
+
+    /** @param {number} n @returns {string} */
+    function formatAuraCounter(n) {
+      return 'Aura: ' + n + ' ✨';
+    }
+
+    function updateCounterUI() {
+      document.getElementById('pet-counter').textContent  = formatPetCounter(petCount);
+      document.getElementById('aura-counter').textContent = formatAuraCounter(auraScore);
+    }
+
+    function handlePet() {
+      petCount++;
+      updateCounterUI();
+      AudioManager.play('pet');
+      const reaction = ReactionSelector.select();
+      AnimationController.trigger(reaction, (delta) => {
+        auraScore += delta;
+        updateCounterUI();
+      });
+    }
+
+    // Wire interactions and initialise counters once the DOM is ready.
+    document.addEventListener('DOMContentLoaded', () => {
+      const catEl = document.getElementById('cat');
+
+      // Pointer interaction
+      catEl.addEventListener('click', handlePet);
+
+      // Keyboard interaction (Enter or Space)
+      catEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handlePet();
+        }
+      });
+
+      // Initialise display
+      updateCounterUI();
+    });
+  </script>
+
+</body>
+</html>
